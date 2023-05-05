@@ -1,47 +1,41 @@
 package pro.freeserver.plugin.alphakun.roulette.utils
 
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.google.gson.GsonBuilder
 import org.bukkit.plugin.Plugin
-import pro.freeserver.plugin.alphakun.roulette.consts.RouletteData
-import sun.tools.jconsole.inspector.Utils.getClass
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
+import pro.freeserver.plugin.alphakun.roulette.Roulette
+import pro.freeserver.plugin.alphakun.roulette.handlers.RouletteHandler
+import java.io.*
 
-class GsonUtil<T>(fileName: String, plugin: Plugin) {
-    private var gson: Gson = Gson()
+class GsonUtil(fileName: String, plugin: Plugin) {
+    private val EXTENSION = ".json"
     private var plugin: Plugin
     private var fileName: String
     var file: File
-    var charset: Charset
+    var charset: String
+
     init {
         this.plugin = plugin
-        this.fileName = fileName
-        this.file = File(plugin.dataFolder, fileName)
-        this.charset = StandardCharsets.UTF_8
+        this.fileName = fileName + EXTENSION
+        this.file = File(Roulette.plugin.dataFolder, this.fileName)
+        this.charset = "UTF-8"
     }
 
-    fun toJson(data: T) {
+    fun toJson(data: RouletteHandler) {
         try {
-            OutputStreamWriter(FileOutputStream(file), charset).use { writer ->
-                gson.toJson(data, writer)
-            }
+            val writer = OutputStreamWriter(FileOutputStream(file), charset)
+            val gson = GsonBuilder().create()
+            gson.toJson(data, writer)
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
-    fun fromJson(): T? {
+    fun fromJson(): RouletteHandler? {
         try {
-            InputStreamReader(FileInputStream(file), charset).use { reader ->
-                return gson.fromJson(reader, object : TypeToken<T>() {}.type)
-            }
+            val reader = InputStreamReader(FileInputStream(file), charset)
+            val gson = Gson()
+            return gson.fromJson(reader, RouletteHandler::class.java)
         } catch (e: IOException) {
             e.printStackTrace()
         }
